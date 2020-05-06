@@ -4,10 +4,11 @@ const UglifyWebpackPlugin = require('uglifyjs-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
     mode: 'development',
-    entry: './src/index.js',
+    entry: './src/main.js',
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist')
@@ -24,13 +25,27 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
-        new CleanWebpackPlugin()
+        new CleanWebpackPlugin(),
+        new VueLoaderPlugin()
     ],
     module: {
         rules: [
             {
-                test: /\.css/,
-                use: [{ loader: MiniCssExtractPlugin.loader}, 'css-loader'],
+                test: /\.vue$/,
+                loader: 'vue-loader',
+                exclude: /node_modules/
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                        options: {
+                            modules: true
+                        }
+                    }, 
+                    'css-loader'
+                ],
                 exclude: /node_modules/,
                 include: path.resolve(__dirname, 'src')
             },
@@ -47,7 +62,7 @@ module.exports = {
                 ]
             },
             {
-                test: /\.less/,
+                test: /\.less$/,
                 use: [{ loader: MiniCssExtractPlugin.loader }, 'css-loader', 'less-loader'],
                 exclude: /node_modules/,
                 include: path.resolve(__dirname, 'src')
