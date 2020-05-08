@@ -1,5 +1,5 @@
 const path = require('path');
-const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const UglifyWebpackPlugin = require('uglifyjs-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -38,13 +38,13 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: [
+                    'vue-style-loader',
                     {
-                        loader: MiniCssExtractPlugin.loader,
+                        loader: 'css-loader',
                         options: {
                             modules: true
                         }
-                    }, 
-                    'css-loader'
+                    }
                 ],
                 exclude: /node_modules/,
                 include: path.resolve(__dirname, 'src')
@@ -62,21 +62,15 @@ module.exports = {
                 ]
             },
             {
-                test: /\.less$/,
-                use: [{ loader: MiniCssExtractPlugin.loader }, 'css-loader', 'less-loader'],
-                exclude: /node_modules/,
-                include: path.resolve(__dirname, 'src')
-            },
-            {
                 test: /\.js$/,
                 exclude: /(node_modules|bower_components)/,
                 use: {
-                  loader: 'babel-loader',
-                  options: {
-                    presets: ['@babel/preset-env']
-                  }
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env']
+                    }
                 }
-              }
+            }
         ]
     },
     optimization: {
