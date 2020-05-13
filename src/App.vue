@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div :class="$style.testDiv">
-      <tree ref="child-tree" :opts="opts" :load="loadNode" @edvs-tree-handle="edvsTreeHandle"></tree>
+      <tree ref="child-tree" :opts="opts" :load="loadNode" @tree-handle="treeHandle"></tree>
     </div>
   </div>
 </template>
@@ -46,11 +46,6 @@ export default {
         disabled: false, // 是否禁用
         checked: false, // 是否默认选中
         icon: "el-icon-folder-opened", // 自定义图片路径或者是文字图标的class
-        buts: [
-          { id: "create", name: "新增", icon: "createUpBut el-icon-plus" },
-          { id: "remove", name: "删除", icon: "removeBut el-icon-delete" },
-          { id: "modify", name: "修改", icon: "updateBut el-icon-edit-outline" }
-        ]
       },
       {
         id: "22",
@@ -59,11 +54,6 @@ export default {
         disabled: false, // 是否禁用
         checked: false, // 是否默认选中
         icon: "el-icon-folder-opened", // 自定义图片路径或者是文字图标的class
-        buts: [
-          { id: "create", name: "新增", icon: "createUpBut el-icon-plus" },
-          { id: "remove", name: "删除", icon: "removeBut el-icon-delete" },
-          { id: "modify", name: "修改", icon: "updateBut el-icon-edit-outline" }
-        ]
       },
       {
         id: "333",
@@ -72,17 +62,12 @@ export default {
         disabled: false, // 是否禁用
         checked: false, // 是否默认选中
         icon: "el-icon-folder-opened", // 自定义图片路径或者是文字图标的class
-        buts: [
-          { id: "create", name: "新增", icon: "createUpBut el-icon-plus" },
-          { id: "remove", name: "删除", icon: "removeBut el-icon-delete" },
-          { id: "modify", name: "修改", icon: "updateBut el-icon-edit-outline" }
-        ]
       }
     ];
   },
   components: { Tree },
   methods: {
-    edvsTreeHandle(data) {
+    treeHandle(data) {
       // 树形组件事件触发时,调用这个方法
       let handleName = data.handleName; // 触发的 事件名
       let node = data.node; // 触发事件的节点

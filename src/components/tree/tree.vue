@@ -50,15 +50,16 @@ export default {
           }
 
           // 建立子节点
-          if (!tree[node.parentId]) {
-            tree[node.parentId] = new Node({});
+          if (!tree[node.pId]) {
+            tree[node.pId] = new Node({});
           }
-          tree[node.parentId].addChild(node);
+          tree[node.pId].addChild(node);
           keyArr.push(o.id);
         });
         keyArr.forEach(k => tree[k].isRoot() && sortTree.push(tree[k]));
         this.hashNodeTable = tree;
       }
+      console.log(sortTree)
       this.tree = sortTree;
     },
     receiveData(data) {
@@ -80,7 +81,7 @@ export default {
         if (oldNode) oldNode.clicked = false;
       }
       this.checkNodeId = node.id;
-      this.$emit("edvs-tree-handle", {
+      this.$emit("tree-handle", {
         handleName: "clicked",
         node: node.getParam()
       });
@@ -102,7 +103,7 @@ export default {
           }
         });
       }
-      this.$emit("edvs-tree-handle", {
+      this.$emit("tree-handle", {
         handleName: "open",
         node: node.getParam()
       });
@@ -155,7 +156,7 @@ export default {
           }
         }
       }
-      this.$emit("edvs-tree-handle", {
+      this.$emit("tree-handle", {
         handleName: "checked",
         node: node.getParam()
       });
@@ -170,7 +171,7 @@ export default {
       }
       this.checkNodeId = node.id;
       new Promise((res, rej) => {
-        this.$emit("edvs-tree-handle", {
+        this.$emit("tree-handle", {
           handleName: "butClick",
           node: node.getParam(),
           butId: data.butId,
@@ -201,7 +202,7 @@ export default {
           };
           removeAll(node.children);
         } else {
-          data.parentId = node.id;
+          data.pId = node.id;
           if (map[data.id]) {
             // 修改
             node.clone(data);

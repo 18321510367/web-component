@@ -10,7 +10,7 @@ module.exports = {
     mode: 'development',
     entry: './src/main.js',
     output: {
-        filename: 'bundle.js',
+        filename: '[name].[chunkhash].js',
         path: path.resolve(__dirname, 'dist')
     },
     devServer: {
@@ -23,7 +23,7 @@ module.exports = {
             template: path.resolve(__dirname, 'public/index.html')
         }),
         new MiniCssExtractPlugin({
-            filename: 'css/[name].css'
+            filename: '[name].[contenthash].css'
         }),
         new CleanWebpackPlugin(),
         new VueLoaderPlugin()
@@ -33,43 +33,67 @@ module.exports = {
             {
                 test: /\.vue$/,
                 loader: 'vue-loader',
-                exclude: /node_modules/
+                exclude: path.resolve(__dirname, 'node_modules')
             },
             {
                 test: /\.css$/,
                 use: [
-                    'vue-style-loader',
+                    {
+                        loader: MiniCssExtractPlugin.loader
+                    },
                     {
                         loader: 'css-loader',
                         options: {
-                            modules: true
+                            modules: {
+                                localIdentName: '[name]__[local]--[hash:base64:5]'
+                            }
                         }
                     }
                 ],
-                exclude: /node_modules/,
-                include: path.resolve(__dirname, 'src')
+                exclude: path.resolve(__dirname, 'node_modules')
             },
             {
-                test: /\.(gif|jpg|png|bmp|eot|woff|woff2|ttf|svg)/,
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader'],
+                include: path.resolve(__dirname, 'node_modules')
+            },
+            {
+                test: /\.(png|jpg|jpeg|gif|svg|svgz)(\?.+)?$/,
                 use: [
                     {
-                        loader: 'url-loader',
-                        options: {
-                            limit: 8192,
-                            outputPath: 'img'
-                        }
+                        loader: 'url-loader'
                     }
                 ]
             },
             {
                 test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
+                exclude: /(node_modules|bower_components)$/,
                 use: {
                     loader: 'babel-loader',
                     options: {
                         presets: ['@babel/preset-env']
                     }
                 }
+            },
+            {
+                test: /\.(eot|ttf|woff|woff2)(\?.+)?$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            limit: 10000,
+                            name: '[name].[hash:7].[ext]'
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.(png|jpg|jpeg|gif|svg|svgz)(\?.+)?$/,
+                use: [
+                    {
+                        loader: 'file-loader'
+                    }
+                ]
             }
         ]
     },

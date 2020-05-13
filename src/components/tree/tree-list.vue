@@ -8,7 +8,7 @@
         :style="{paddingLeft: getPaddingLeft()}"
       >
         <i
-          :class="[$style['tree-sel'], node.open? 'el-icon-minus': 'el-icon-plus']"
+          :class="[$style['tree-sel'], $style[node.open? 'el-icon-minus': 'el-icon-plus']]"
           :style="{visibility: node.hasChild? 'visible': 'hidden'}"
           @click="open"
         ></i>
@@ -20,7 +20,7 @@
           :type="checkType"
           :checked="node.checked"
           :disabled="node.disabled"
-          :name="checkType === 'radio' && checkRadio === 'level'? (node.parentId || 'root'): 'edvsTree'"
+          :name="checkType === 'radio' && checkRadio === 'level'? (node.parentId || 'root'): 'tree'"
         />
         <div
           :class="[$style['tree-ct'], node.clicked? $style['tree-check']: '']"
@@ -82,6 +82,7 @@ export default {
     checkType: String,
     checkRadio: String
   },
+  mounted() {console.log(this.$style);},
   methods: {
     getPaddingLeft() {
       return (this.level - 1) * 20 + (this.level === 1 ? 4 : 10) + "px";
@@ -98,13 +99,13 @@ export default {
       return f;
     },
     mouseenter(event) {
-      let buts = event.target.querySelector(".edvs-tree-buts");
+      let buts = event.target.querySelector(".tree-buts");
       if (buts) buts.style.visibility = "visible";
     },
     mouseleave(event) {
       let el = event.target;
-      let buts = el.querySelector(".edvs-tree-buts");
-      if (!el.classList.contains("edvs-tree-check") && buts)
+      let buts = el.querySelector(".tree-buts");
+      if (!el.classList.contains("tree-check") && buts)
         buts.style.visibility = "hidden";
     },
     open(event) {
@@ -156,6 +157,7 @@ export default {
   box-sizing: border-box;
   text-align: left;
   white-space: nowrap;
+  display: inline-block;
 }
 
 .tree-checkInp {
@@ -169,7 +171,7 @@ export default {
   background: rgba(160, 227, 255, 0.2);
 }
 
-.tree-item:not(.edvs-tree-check):hover {
+.tree-item:not(.tree-check):hover {
   background: rgba(160, 227, 255, 0.05);
 }
 
@@ -190,5 +192,17 @@ export default {
   height: 25px;
   display: inline-block;
   white-space: nowrap;
+}
+
+.tree-buts {
+	display: inline-block;
+}
+
+.tree-buts > i {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+	cursor: pointer;
+	margin-left: 5px;
 }
 </style>
