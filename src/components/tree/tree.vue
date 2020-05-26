@@ -8,15 +8,15 @@
       :checkRadio="opts.check && opts.check.checkRadio"
       :checkType="opts.check && opts.check.type"
       @receive-data="receiveData"
-    ></tree-list>
+    />
   </div>
 </template>
 <script>
-import { Node } from "../../js/classes.js";
+import { Node } from "../../js/utils.js";
 import TreeList from "./tree-list.vue";
 
 export default {
-  name: "xx-tree",
+  name: "web-tree",
   data() {
     return {
       tree: [],
@@ -27,7 +27,9 @@ export default {
   },
   props: {
     opts: Object,
-    load: Function
+    load: Function,
+    allowDrag: Function,
+    allowDrop: Function
   },
   components: { TreeList },
   created() {
@@ -48,6 +50,7 @@ export default {
             node = new Node(o);
             tree[o.id] = node;
           }
+          node.buts = node.buts || this.opts.buts;
 
           // 建立子节点
           if (!tree[node.pId]) {
@@ -59,7 +62,6 @@ export default {
         keyArr.forEach(k => tree[k].isRoot() && sortTree.push(tree[k]));
         this.hashNodeTable = tree;
       }
-      console.log(sortTree)
       this.tree = sortTree;
     },
     receiveData(data) {
@@ -118,6 +120,10 @@ export default {
         if (relation.startsWith("P")) {
           let parent = node.parent;
           while (parent && parent.id) {
+            if (!checked) {
+              let hasCheck = parent.children.find(n => n.checked);
+              if (hasCheck) break;
+            }
             parent.checked = checked;
             parent = parent.parent;
           }
@@ -210,8 +216,10 @@ export default {
             map[node.id] = node;
           } else {
             let nNode = new Node(data);
+            nNode.buts = nNode.buts || this.opts.buts;
             map[data.id] = nNode;
             node.addChild(nNode);
+            node.open = true;
           }
         }
       });
@@ -246,6 +254,151 @@ export default {
       if (node) this.$set(node, "buts", buts);
     }
   },
+  mounted() {
+    let node;
+    this.$el.addEventListener(
+      "mousedown",
+      event => {
+        if (!this.opts.draggable) return;
+        let { el, n } = getNode.call(this, event.target);
+        node = n;
+        if (node) {
+          node.draggable =
+            typeof this.allowDrag === "function"
+              ? this.allowDrag(node.getParam())
+              : true;
+        }
+      },
+      false
+    );
+
+    let overNode;
+    let currentOverEl;
+    this.$el.addEventListener(
+      "dragover",
+      event => {
+        if (!this.opts.draggable) return;
+        let { el, n } = getNode.call(this, event.target);
+        if (currentOverEl && el !== currentOverEl) {
+          ["drag-over-pre", "drag-over-inner", "drag-over-next"].forEach(
+            clas => {
+              clas = this.$style[clas];
+              if (currentOverEl.classList.contains(clas)) {
+                currentOverEl.classList.remove(clas);
+              }
+            }
+          );
+        }
+        currentOverEl = el;
+        let allowDrop =
+          n && typeof this.allowDrop === "function"
+            ? this.allowDrop(n.getParam(), node.getParam())
+            : true;
+        if (n !== node && allowDrop) {
+          let { top, bottom, height } = el.children[0].getBoundingClientRect();
+          let pre = top + height * 0.25;
+          let next = top + height * 0.75;
+          let y = event.clientY;
+          let addClass;
+          let classList = el.classList;
+          if (y >= top && y < pre) {
+            addClass = "pre";
+          } else if (y >= pre && y <= next) {
+            addClass = "inner";
+          } else if (y <= bottom && y > next) {
+            addClass = "next";
+          } else {
+            return;
+          }
+          ["drag-over-pre", "drag-over-inner", "drag-over-next"].forEach(
+            clas => {
+              clas = this.$style[clas];
+              if (classList.contains(clas) && clas.indexOf(addClass) < 0) {
+                classList.remove(clas);
+              } else if (
+                !classList.contains(clas) &&
+                clas.indexOf(addClass) > -1
+              ) {
+                classList.add(clas);
+              }
+            }
+          );
+          overNode = n;
+          event.preventDefault();
+        }
+      },
+      false
+    );
+
+    this.$el.addEventListener(
+      "dragend",
+      event => {
+        if (overNode && currentOverEl && node) {
+          let insertPosition;
+          ["drag-over-pre", "drag-over-inner", "drag-over-next"].forEach(
+            (clas, i) => {
+              clas = this.$style[clas];
+              if (currentOverEl.classList.contains(clas)) {
+                insertPosition = i;
+                currentOverEl.classList.remove(clas);
+              }
+            }
+          );
+          currentOverEl = null;
+          if (insertPosition > -1) {
+            let nodeArr;
+            if (node.pId) {
+              nodeArr = node.parent.children;
+              if (nodeArr.length === 1) node.parent.hasChild = false;
+            } else {
+              nodeArr = this.tree;
+            }
+            let nodeIndex = nodeArr.findIndex(an => an.id === node.id);
+            if (nodeIndex > -1) {
+              nodeArr.splice(nodeIndex, 1);
+            }
+            if (insertPosition === 1) {
+              node.pId = overNode.id;
+              node.parent = overNode.parent;
+              overNode.addChild(node);
+            } else if (insertPosition === 0 || insertPosition === 2) {
+              if (overNode.pId) {
+                nodeArr = overNode.parent.children;
+              } else {
+                nodeArr = this.tree;
+              }
+              let overNodeIndex = nodeArr.findIndex(
+                an => an.id === overNode.id
+              );
+              if (overNodeIndex > -1) {
+                node.pId = overNode.pId;
+                node.parent = overNode.parent;
+                nodeArr.splice(
+                  insertPosition ? overNodeIndex + 1 : overNodeIndex,
+                  0,
+                  node
+                );
+              }
+            }
+          }
+        }
+        if (node) {
+          node.draggable = false;
+          node = null;
+        }
+      },
+      false
+    );
+
+    function getNode(el) {
+      let nodeId = el.dataset.treeNodeid;
+      while (!nodeId && el !== this.$el) {
+        el = el.parentElement;
+        nodeId = el.dataset.treeNodeid;
+      }
+      return { el, n: this.hashNodeTable[nodeId] };
+    }
+  },
   watch: {
     "opts.data": {
       immediate: true,
@@ -263,8 +416,21 @@ export default {
   height: 100%;
 }
 
-.tree ul, .tree li {
+.tree ul,
+.tree li {
   width: 100%;
   list-style-type: none;
+}
+
+.drag-over-pre > div {
+  border-top: 1px solid #5786c0;
+}
+
+.drag-over-inner > div span[title] {
+  background: #5786c0;
+}
+
+.drag-over-next > div {
+  border-bottom: 1px solid #5786c0;
 }
 </style>

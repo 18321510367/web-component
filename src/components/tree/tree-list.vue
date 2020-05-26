@@ -1,6 +1,12 @@
 <template>
   <ul v-if="nodes">
-    <li v-for="(node, index) in nodes" :key="node.id">
+    <li
+      v-for="(node, index) in nodes"
+      :key="node.id"
+      :draggable="node.draggable"
+      :data-tree-nodeId="node.id"
+      @keydown.prevent=""
+    >
       <div
         :class="$style['tree-item']"
         :data-tree-level="level"
@@ -8,7 +14,7 @@
         :style="{paddingLeft: getPaddingLeft()}"
       >
         <i
-          :class="[$style['tree-sel'], $style[node.open? 'el-icon-minus': 'el-icon-plus']]"
+          :class="[$style['tree-sel'], node.open? 'el-icon-minus': 'el-icon-plus']"
           :style="{visibility: node.hasChild? 'visible': 'hidden'}"
           @click="open"
         ></i>
@@ -39,7 +45,7 @@
           >{{ node.name }}</span>
           <div
             v-if="node.buts"
-            :class="$style['tree-buts']"
+            :class="[$style['tree-buts-container'], 'tree-buts']"
             :style="{visibility: node.clicked? 'visible': 'hidden'}"
           >
             <i
@@ -66,7 +72,7 @@
         :checkType="checkType"
         :font="font"
         :buts="buts"
-      ></tree-list>
+      />
     </li>
   </ul>
 </template>
@@ -82,7 +88,6 @@ export default {
     checkType: String,
     checkRadio: String
   },
-  mounted() {console.log(this.$style);},
   methods: {
     getPaddingLeft() {
       return (this.level - 1) * 20 + (this.level === 1 ? 4 : 10) + "px";
@@ -105,7 +110,7 @@ export default {
     mouseleave(event) {
       let el = event.target;
       let buts = el.querySelector(".tree-buts");
-      if (!el.classList.contains("tree-check") && buts)
+      if (!el.classList.contains(this.$style["tree-check"]) && buts)
         buts.style.visibility = "hidden";
     },
     open(event) {
@@ -168,11 +173,11 @@ export default {
 }
 
 .tree-check > span[title] {
-  background: rgba(160, 227, 255, 0.2);
+  background: rgba(221, 221, 221, 1);
 }
 
 .tree-item:not(.tree-check):hover {
-  background: rgba(160, 227, 255, 0.05);
+  background: rgba(221, 221, 221, 0.4);
 }
 
 .tree-sel {
@@ -184,7 +189,8 @@ export default {
   margin-left: 4px;
   display: inline-block;
   cursor: pointer;
-  border: 1px solid rgba(160, 227, 255, 0.6);
+  color: #000;
+  border: 1px solid #000;
   box-sizing: border-box;
 }
 
@@ -194,15 +200,15 @@ export default {
   white-space: nowrap;
 }
 
-.tree-buts {
-	display: inline-block;
+.tree-buts-container {
+  display: inline-block;
 }
 
-.tree-buts > i {
-	width: 16px;
-	height: 16px;
-	font-size: 16px;
-	cursor: pointer;
-	margin-left: 5px;
+.tree-buts-container > i {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 5px;
 }
 </style>

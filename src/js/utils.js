@@ -1,5 +1,5 @@
-class Node {
-    constructor({id, name, icon, open, pId, isLeaf, checked, disabled, excludeBut, other, buts, font}) { // Node.lazy: 是否启用懒加载
+class Node { // Node.lazy: 是否启用懒加载
+    constructor({ id, name, icon, open, pId, isLeaf, checked, disabled, excludeBut, other, buts, font }) {
         this.id = id;
         this.name = name;
         this.icon = icon;
@@ -12,25 +12,26 @@ class Node {
         this.other = other;
         this.buts = buts;
         this.font = font;
+        this.draggable = false;
         this.parent = {};
         this.children = [];
-        if(typeof isLeaf === 'boolean') {
+        if (typeof isLeaf === 'boolean') {
             this.hasChild = !isLeaf;
         } else {
             this.hasChild = !!Node.lazy;
         }
     }
-    
+
     addChild(node) {
-        if(!this.hasChild) this.hasChild = true;
+        if (!this.hasChild) this.hasChild = true;
         node.parent = this;
         this.children.push(node);
     }
-    
+
     isRoot() {
         return !this.parent.id;
     }
-    
+
     getParam() {
         return {
             id: this.id,
@@ -42,12 +43,12 @@ class Node {
             clicked: this.clicked,
             disabled: this.disabled,
             children: this.children,
-            buts: this.buts,
+            buts: this.buts && JSON.parse(JSON.stringify(this.buts)),
             other: this.other,
             font: this.font
         };
     }
-    
+
     clone(o) {
         this.id = o.id;
         this.name = o.name;

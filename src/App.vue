@@ -1,19 +1,20 @@
 <template>
   <div id="app">
     <div :class="$style.testDiv">
-      <tree ref="child-tree" :opts="opts" :load="loadNode" @tree-handle="treeHandle"></tree>
+      <web-tree ref="child-tree" :opts="opts" :load="loadNode" :allow-drag="allowDrag" :Abc="allowDrag" :allow-drop="allowDrop" @tree-handle="treeHandle"/>
     </div>
   </div>
 </template>
 
 <script>
-import Tree from "./components/tree/tree.vue";
+import WebTree from "./components/tree/tree.vue";
 
 export default {
   data() {
     return {
       opts: {
         data: null,
+        draggable: true, // 启用拖拽
         //lazy: true, // 懒加载
         check: {
           // 单选或多选
@@ -43,29 +44,26 @@ export default {
         id: "test1",
         name: "张三",
         pId: "",
-        disabled: false, // 是否禁用
-        checked: false, // 是否默认选中
-        icon: "el-icon-folder-opened", // 自定义图片路径或者是文字图标的class
+        open: true,
+        icon: "el-icon-folder-opened" // 自定义图片路径或者是文字图标的class
       },
       {
         id: "22",
         name: "张四",
         pId: "test1",
-        disabled: false, // 是否禁用
-        checked: false, // 是否默认选中
-        icon: "el-icon-folder-opened", // 自定义图片路径或者是文字图标的class
+        open: true,
+        icon: "el-icon-folder-opened" // 自定义图片路径或者是文字图标的class
       },
       {
         id: "333",
         name: "张四333",
         pId: "22",
-        disabled: false, // 是否禁用
-        checked: false, // 是否默认选中
-        icon: "el-icon-folder-opened", // 自定义图片路径或者是文字图标的class
+        open: true,
+        icon: "el-icon-folder-opened" // 自定义图片路径或者是文字图标的class
       }
     ];
   },
-  components: { Tree },
+  components: { WebTree },
   methods: {
     treeHandle(data) {
       // 树形组件事件触发时,调用这个方法
@@ -73,13 +71,7 @@ export default {
       let node = data.node; // 触发事件的节点
       if (handleName === "clicked") {
         // 点击节点名称
-        console.log("点击节点名字: ");
-        this.$refs["child-tree"].changeButs(node.id, [
-          { id: "create", name: "新增", icon: "createUpBut el-icon-plus" },
-          { id: "remove", name: "删除", icon: "createUpBut el-icon-plus" },
-          { id: "modify", name: "修改", icon: "createUpBut el-icon-plus" }
-        ]);
-        //this.$refs['child-tree'].nodeCheckState([{id: node.id, checked: true}]);
+        this.$refs['child-tree'].nodeCheckState([{id: node.id, checked: true}]);
       } else if (handleName === "open") {
         // 展开或收缩
         console.log(node.open ? "展开" : "收缩");
@@ -104,6 +96,12 @@ export default {
           data.resolve();
         }
       }
+    },
+    allowDrag(node) { // 返回true表示不允许拖动
+      return node.id !== '22';
+    },
+    allowDrop(node, dragNode) { // 返回true表示不允许放置, node: 停放的节点, dragNode是拖拽的节点
+      return node.id !== '666';
     },
     loadNode(node, res) {
       // 懒加载
@@ -152,5 +150,6 @@ html {
 .testDiv {
   height: 600px;
   width: 400px;
+  margin-top: 50px;
 }
 </style>

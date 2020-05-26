@@ -7,7 +7,7 @@ const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plug
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
     entry: './src/main.js',
     output: {
         filename: '[name].[chunkhash].js',
@@ -104,5 +104,14 @@ module.exports = {
             }),
             new OptimizeCssAssetsWebpackPlugin()
         ]
+    },
+    performance: {
+        hints: 'warning', // 枚举
+        maxAssetSize: 30000000,
+        maxEntrypointSize: 50000000,
+        assetFilter: function (assetFilename) {
+            return assetFilename.endsWith('.css') || assetFilename.endsWith('.js');
+
+        }
     }
 };
