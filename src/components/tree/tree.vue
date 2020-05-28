@@ -290,11 +290,7 @@ export default {
           );
         }
         currentOverEl = el;
-        let allowDrop =
-          n && typeof this.allowDrop === "function"
-            ? this.allowDrop(n.getParam(), node.getParam())
-            : true;
-        if (n !== node && allowDrop) {
+        if (n !== node) {
           let { top, bottom, height } = el.children[0].getBoundingClientRect();
           let pre = top + height * 0.25;
           let next = top + height * 0.75;
@@ -310,6 +306,11 @@ export default {
           } else {
             return;
           }
+          let allowDrop =
+            n && typeof this.allowDrop === "function"
+              ? this.allowDrop(n.getParam(), node.getParam(), addClass)
+              : true;
+          if (!allowDrop) return;
           ["drag-over-pre", "drag-over-inner", "drag-over-next"].forEach(
             clas => {
               clas = this.$style[clas];
@@ -360,6 +361,7 @@ export default {
             if (insertPosition === 1) {
               node.pId = overNode.id;
               node.parent = overNode.parent;
+              overNode.open = true;
               overNode.addChild(node);
             } else if (insertPosition === 0 || insertPosition === 2) {
               if (overNode.pId) {
@@ -432,5 +434,43 @@ export default {
 
 .drag-over-next > div {
   border-bottom: 1px solid #5786c0;
+}
+
+.drag-over-pre > div {
+  border-top: 1px solid #5786c0;
+}
+
+.drag-over-inner > div span[title] {
+  background: #5786c0;
+}
+
+.drag-over-next > div {
+  border-bottom: 1px solid #5786c0;
+}
+
+.drag-over-pre > div::before,
+.drag-over-inner > div::before,
+.drag-over-next > div::before {
+  color: rgba(255, 0, 0, 0.8);
+  font-size: 25px;
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 0px;
+  display: inline-block;
+  transform: translateY(-50%);
+  font: normal normal normal 14px/1 element-icons;
+}
+
+.drag-over-pre > div::before {
+  content: "\e6e6";
+}
+
+.drag-over-inner > div::before {
+  content: "\e6ea";
+}
+
+.drag-over-next > div::before {
+  content: "\e6eb";
 }
 </style>

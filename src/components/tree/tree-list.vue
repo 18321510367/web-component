@@ -5,7 +5,7 @@
       :key="node.id"
       :draggable="node.draggable"
       :data-tree-nodeId="node.id"
-      @keydown.prevent=""
+      @keydown.prevent
     >
       <div
         :class="$style['tree-item']"
@@ -27,6 +27,7 @@
           :checked="node.checked"
           :disabled="node.disabled"
           :name="checkType === 'radio' && checkRadio === 'level'? (node.parentId || 'root'): 'tree'"
+          :style="{visibility: node.disabled === null? 'hidden': 'visible'}"
         />
         <div
           :class="[$style['tree-ct'], node.clicked? $style['tree-check']: '']"
@@ -163,6 +164,7 @@ export default {
   text-align: left;
   white-space: nowrap;
   display: inline-block;
+  position: relative;
 }
 
 .tree-checkInp {
