@@ -22,7 +22,8 @@ export default {
       tree: [],
       hashNodeTable: null,
       checkNodeId: null,
-      radioAllChecked: null // radio不是level时选中的节点,避免遍历整棵树
+      radioAllChecked: null, // radio不是level时选中的节点,避免遍历整棵树
+      loadNodeTimeout: null
     };
   },
   props: {
@@ -34,6 +35,16 @@ export default {
   components: { TreeList },
   created() {
     Node.lazy = this.opts.lazy;
+    let unWatch = this.$watch(
+      "opts.data",
+      function(data) {
+        if (data) {
+          if (unWatch) unWatch();
+          this.sort(data);
+        }
+      },
+      { immediate: true }
+    );
   },
   methods: {
     sort(data) {
@@ -78,7 +89,7 @@ export default {
     },
     childClickHandle(data) {
       let node = data.node;
-      if (this.checkNodeId) {
+      if (this.checkNodeId || this.checkNodeId === 0) {
         let oldNode = this.hashNodeTable[this.checkNodeId];
         if (oldNode) oldNode.clicked = false;
       }
@@ -90,16 +101,43 @@ export default {
     },
     childOpenHandle(data) {
       let node = data.node;
-      if (typeof this.load === "function" && this.opts.lazy && node.open) {
+      if (
+        typeof this.load === "function" &&
+        this.opts.lazy &&
+        node.open &&
+        !node.loaded
+      ) {
         new Promise((resolve, reject) => {
+          node.loaded = true;
           this.load(data.node, resolve, reject);
         }).then(datas => {
           if (Array.isArray(datas) && datas.length > 0) {
-            datas.forEach(d => {
-              let n = new Node(d);
-              node.addChild(n);
-              this.hashNodeTable[node.id] = n;
-            });
+            let start = 0,
+              end = 100,
+              len = datas.length;
+            let inputType = this.opts.check && this.opts.check.type;
+            let relation = this.opts.check && this.opts.check.checked;
+
+            let fn = () => {
+              for (; start < end; start++) {
+                if (start >= len) break;
+                let n = new Node(datas[start]);
+                if (
+                  inputType === "checkbox" &&
+                  relation &&
+                  relation.endsWith("C")
+                ) {
+                  n.checked = node.checked;
+                }
+                node.addChild(n);
+                this.hashNodeTable[n.id] = n;
+              }
+              if (end < len) {
+                end += 100;
+                this.loadNodeTimeout = setTimeout(fn, 200);
+              }
+            };
+            fn();
           } else {
             node.hasChild = false;
           }
@@ -401,12 +439,9 @@ export default {
       return { el, n: this.hashNodeTable[nodeId] };
     }
   },
-  watch: {
-    "opts.data": {
-      immediate: true,
-      handler: function(data) {
-        if (data) this.sort(data);
-      }
+  beforeDestroy() {
+    if (this.loadNodeTimeout) {
+      clearTimeout(this.loadNodeTimeout);
     }
   }
 };

@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div :class="$style.testDiv">
-      <web-tree ref="child-tree" :opts="opts" :load="loadNode" :allow-drag="allowDrag" :Abc="allowDrag" :allow-drop="allowDrop" @tree-handle="treeHandle"/>
+      <web-tree ref="child-tree" :opts="opts" :load="loadNode" :allow-drag="allowDrag" :allow-drop="allowDrop" @tree-handle="treeHandle"/>
     </div>
   </div>
 </template>
@@ -15,7 +15,7 @@ export default {
       opts: {
         data: null,
         draggable: true, // 启用拖拽
-        //lazy: true, // 懒加载
+        lazy: true, // 懒加载
         check: {
           // 单选或多选
           type: "checkbox", // checkbox或者radio
@@ -58,7 +58,8 @@ export default {
         id: "333",
         name: "张四333",
         pId: "22",
-        open: true,
+        open: false,
+        isLeaf: false,
         icon: "el-icon-folder-opened" // 自定义图片路径或者是文字图标的class
       }
     ];
@@ -106,28 +107,18 @@ export default {
     loadNode(node, res) {
       // 懒加载
       // node: 展开的父节点, resolve: 回调钩子
-      if (node.id === "1585294301005") {
+      if (node.id === "333") {
+        let nodes = [];
+        for(let i = 0; i < 10000; i++) {
+          nodes.push({
+            id: (i).toString(),
+            name: i,
+            pId: '333',
+            isLeaf: true
+          });
+        }
         setTimeout(() => {
-          res([
-            {
-              id: "test1",
-              name: "test1",
-              parentId: "1585294301005",
-              isLeaf: false
-            },
-            {
-              id: "test2",
-              name: "test2",
-              parentId: "1585294301005",
-              isLeaf: false
-            },
-            {
-              id: "test3",
-              name: "test3",
-              parentId: "1585294301005",
-              isLeaf: true
-            }
-          ]);
+          res(nodes);
         }, 100);
       } else if (node.id === "test1" || node.id === "test2") {
         res(null);

@@ -5,7 +5,6 @@
       :key="node.id"
       :draggable="node.draggable"
       :data-tree-nodeId="node.id"
-      @keydown.prevent
     >
       <div
         :class="$style['tree-item']"
